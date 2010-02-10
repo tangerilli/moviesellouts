@@ -22,7 +22,7 @@ def theater_html(theater_id, theater_name):
     return result
     
 def cached_html(theater_id, theater_name):
-    f = open("data/testdata.html", "r")
+    f = open("data/testdata_newstyle.html", "r")
     result = f.read()
     f.close()
     return result
@@ -52,14 +52,18 @@ def get_newstyle_showtimes(soup):
                                 times.append(token.strip())
                 else:
                     times.append(thing.string)
-            for time in times:
-                if "SOLD OUT" in time:
+
+            for index, time in enumerate(times):
+                if "SOLD OUT" in time or (index + 1 < len(times) and "SOLD OUT" in times[index + 1]):
                     time = time.split(" ")[0]
                     availability = "soldout"
                 else:
+                    if " " in time:
+                        time = time.split(" ")[0]
                     availability = "available"
-                movie_time = datetime.datetime.strptime(time, "%I:%M%p").time()
-                movies[title][availability].append(movie_time)
+                if pat.search(time):
+                    movie_time = datetime.datetime.strptime(time, "%I:%M%p").time()
+                    movies[title][availability].append(movie_time)
             
         except Exception, e:
             logging.exception("Exception while parsing a movie")
